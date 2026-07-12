@@ -1,489 +1,1061 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PoliQueue — Sistem Informasi Antrian Poliklinik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue-50:#eef3ff;
+    --blue-100:#dbe6ff;
+    --blue-500:#3b5bfd;
+    --blue-600:#2f4de0;
+    --blue-700:#1e3ab8;
+    --navy-900:#0f172a;
+    --navy-700:#334155;
+    --navy-500:#64748b;
+    --bg:#eef1f7;
+    --surface:#ffffff;
+    --border:#e6e9f2;
+    --green-500:#16a34a;
+    --green-50:#ecfdf3;
+    --amber-500:#d97706;
+    --amber-50:#fffaeb;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.04);
+    --shadow-md: 0 8px 24px rgba(15,23,42,.08);
+    --shadow-lg: 0 24px 48px -12px rgba(30,58,138,.25);
+    --radius:16px;
+  }
 
-    <title>Laravel</title>
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--navy-900);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.brand,.nav-link,.btn,.chip{
+    font-family:'Plus Jakarta Sans',sans-serif;
+  }
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet"/>
+  a{text-decoration:none;color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
 
-    <!-- Styles / Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+  /* ===== Top accent bar ===== */
+  .top-accent{
+    height:4px;
+    background:linear-gradient(90deg,var(--blue-500),var(--blue-700));
+  }
+
+  /* ===== Navbar ===== */
+  header{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-wrap{
+    max-width:1200px;
+    margin:0 auto;
+    padding:16px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:20px;
+    color:var(--blue-600);
+    letter-spacing:-0.02em;
+  }
+  .brand-mark{
+    width:34px;height:34px;
+    border-radius:9px;
+    background:linear-gradient(135deg,var(--blue-500),var(--blue-700));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow-sm);
+    flex-shrink:0;
+  }
+  .brand-mark svg{width:18px;height:18px;}
+
+  nav{display:flex;align-items:center;gap:4px;}
+  .nav-link{
+    font-weight:600;
+    font-size:14.5px;
+    color:var(--navy-700);
+    padding:9px 16px;
+    border-radius:10px;
+    transition:background .15s ease, color .15s ease;
+    position:relative;
+  }
+  .nav-link:hover{background:var(--blue-50);color:var(--blue-700);}
+  .nav-link.active{color:var(--blue-700);background:var(--blue-50);}
+  .nav-link.admin{
+    margin-left:8px;
+    color:#fff;
+    background:var(--navy-900);
+  }
+  .nav-link.admin:hover{background:#1e293b;}
+
+  .nav-toggle{display:none;}
+
+  /* ===== Layout helpers ===== */
+  .container{max-width:1200px;margin:0 auto;padding:0 32px;}
+
+  /* ===== Hero ===== */
+  .hero{padding:72px 0 88px;}
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:32px;
+    align-items:stretch;
+  }
+
+  .hero-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:52px 48px;
+    box-shadow:var(--shadow-md);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    width:fit-content;
+    background:var(--blue-50);
+    color:var(--blue-700);
+    font-weight:700;
+    font-size:13px;
+    padding:8px 16px;
+    border-radius:999px;
+    margin-bottom:22px;
+    letter-spacing:.01em;
+  }
+  .chip .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--green-500);
+    box-shadow:0 0 0 3px var(--green-50);
+    animation:pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot{
+    0%,100%{opacity:1;}
+    50%{opacity:.4;}
+  }
+
+  .hero h1{
+    font-size:46px;
+    line-height:1.12;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    margin:0 0 18px;
+    color:var(--navy-900);
+  }
+  .hero h1 span{color:var(--blue-600);}
+
+  .hero p{
+    font-size:16.5px;
+    line-height:1.65;
+    color:var(--navy-500);
+    max-width:480px;
+    margin:0 0 32px;
+  }
+
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-weight:700;
+    font-size:15px;
+    padding:14px 24px;
+    border-radius:12px;
+    border:none;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--blue-500),var(--blue-700));
+    color:#fff;
+    box-shadow:0 10px 20px -6px rgba(47,77,224,.45);
+  }
+  .btn-primary:hover{box-shadow:0 14px 26px -6px rgba(47,77,224,.55);transform:translateY(-1px);}
+  .btn-secondary{
+    background:var(--blue-50);
+    color:var(--blue-700);
+  }
+  .btn-secondary:hover{background:var(--blue-100);}
+
+  .hero-stats{
+    display:flex;
+    gap:28px;
+    margin-top:36px;
+    padding-top:28px;
+    border-top:1px solid var(--border);
+  }
+  .hero-stat b{
+    display:block;
+    font-size:22px;
+    font-weight:800;
+    color:var(--navy-900);
+  }
+  .hero-stat span{
+    font-size:12.5px;
+    color:var(--navy-500);
+    font-weight:600;
+  }
+
+  /* ===== Queue preview card ===== */
+  .queue-card{
+    background:linear-gradient(160deg,var(--blue-500) 0%, var(--blue-700) 100%);
+    border-radius:24px;
+    padding:36px;
+    color:#fff;
+    box-shadow:var(--shadow-lg);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+  .queue-card::before{
+    content:"";
+    position:absolute;
+    width:260px;height:260px;
+    background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);
+    top:-90px;right:-70px;
+    border-radius:50%;
+  }
+  .queue-card::after{
+    content:"";
+    position:absolute;
+    width:200px;height:200px;
+    background:radial-gradient(circle,rgba(255,255,255,.10),transparent 70%);
+    bottom:-80px;left:-60px;
+    border-radius:50%;
+  }
+
+  .queue-card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    position:relative;
+    z-index:1;
+  }
+  .queue-label{
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.75);
+  }
+  .live-pill{
+    display:flex;align-items:center;gap:6px;
+    font-size:11.5px;font-weight:700;
+    background:rgba(255,255,255,.14);
+    padding:5px 10px;border-radius:999px;
+    color:#fff;
+  }
+  .live-pill .dot{
+    width:6px;height:6px;border-radius:50%;background:#4ade80;
+    animation:pulse-dot 2s infinite;
+  }
+
+  .queue-number{
+    font-size:64px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    margin:26px 0 6px;
+    position:relative;z-index:1;
+    line-height:1;
+  }
+  .queue-meta{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14.5px;
+    color:rgba(255,255,255,.85);
+    font-weight:600;
+    margin-bottom:26px;
+    position:relative;z-index:1;
+  }
+  .status-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.16);
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12.5px;
+  }
+
+  .queue-progress{
+    position:relative;z-index:1;
+    background:rgba(255,255,255,.14);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-top:auto;
+  }
+  .queue-progress-row{
+    display:flex;justify-content:space-between;
+    font-size:13px;font-weight:600;
+    color:rgba(255,255,255,.85);
+    margin-bottom:10px;
+  }
+  .queue-progress-row b{color:#fff;font-size:14px;}
+  .progress-track{
+    height:6px;
+    background:rgba(255,255,255,.2);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:35%;
+    border-radius:999px;
+    background:#fff;
+  }
+
+  /* ===== Section shared ===== */
+  .section{padding:24px 0 88px;}
+  .section-head{
+    text-align:center;
+    max-width:600px;
+    margin:0 auto 44px;
+  }
+  .section-eyebrow{
+    font-size:13px;
+    font-weight:700;
+    color:var(--blue-600);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .section-head h2{
+    font-size:32px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    margin:0 0 12px;
+    color:var(--navy-900);
+  }
+  .section-head p{
+    font-size:15.5px;
+    color:var(--navy-500);
+    line-height:1.6;
+    margin:0;
+  }
+
+  /* ===== Steps ===== */
+  .steps-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+    position:relative;
+  }
+  .step-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:32px 28px;
+    box-shadow:var(--shadow-sm);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .step-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--shadow-md);
+    border-color:var(--blue-100);
+  }
+  .step-num{
+    width:40px;height:40px;
+    border-radius:11px;
+    background:var(--blue-50);
+    color:var(--blue-700);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;
+    font-size:15px;
+    margin-bottom:20px;
+  }
+  .step-card h3{
+    font-size:17.5px;
+    font-weight:700;
+    margin:0 0 8px;
+    color:var(--navy-900);
+  }
+  .step-card p{
+    font-size:14.5px;
+    color:var(--navy-500);
+    line-height:1.6;
+    margin:0;
+  }
+
+  /* ===== Poli overview ===== */
+  .poli-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+  }
+  .poli-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+    box-shadow:var(--shadow-sm);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .poli-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+  .poli-card-top{
+    display:flex;align-items:center;
+    margin-bottom:18px;
+  }
+  .poli-icon{
+    width:42px;height:42px;
+    border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .poli-icon svg{width:20px;height:20px;}
+  .poli-tag{
+    font-size:11px;font-weight:700;
+    padding:4px 9px;border-radius:999px;
+  }
+  .poli-tag.normal{background:var(--green-50);color:var(--green-500);}
+  .poli-tag.busy{background:var(--amber-50);color:var(--amber-500);}
+  .poli-card h4{
+    font-size:15.5px;font-weight:700;margin:0 0 4px;color:var(--navy-900);
+  }
+  .poli-card .waiting{
+    font-size:13px;color:var(--navy-500);margin-bottom:14px;
+  }
+  .poli-card .waiting b{color:var(--navy-900);font-weight:700;}
+  .poli-wait-time{
+    display:flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:600;color:var(--navy-500);
+    padding-top:14px;border-top:1px dashed var(--border);
+  }
+
+  /* ===== View switching ===== */
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ===== Form (Ambil Antrian) ===== */
+  .form-shell{
+    max-width:560px;
+    margin:0 auto;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:44px 40px;
+    box-shadow:var(--shadow-md);
+  }
+  .field{margin-bottom:20px;}
+  .field label{
+    display:block;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--navy-700);
+    margin-bottom:8px;
+  }
+  .field input,.field select{
+    width:100%;
+    padding:13px 14px;
+    border-radius:11px;
+    border:1.5px solid var(--border);
+    font-size:15px;
+    font-family:inherit;
+    color:var(--navy-900);
+    background:#fbfcfe;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .field input:focus,.field select:focus{
+    outline:none;
+    border-color:var(--blue-500);
+    box-shadow:0 0 0 3px var(--blue-100);
+    background:#fff;
+  }
+  .field-hint{font-size:12.5px;color:var(--navy-500);margin-top:6px;}
+  .btn-block{width:100%;justify-content:center;margin-top:6px;}
+
+  .ticket-result{
+    max-width:560px;
+    margin:0 auto;
+    text-align:center;
+  }
+  .ticket-result .queue-card{margin-bottom:20px;}
+  .ticket-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+  /* ===== Monitoring ===== */
+  .mon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .mon-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:26px;
+    box-shadow:var(--shadow-sm);
+  }
+  .mon-card h4{margin:0 0 4px;font-size:16px;font-weight:700;}
+  .mon-serving{
+    background:var(--blue-50);
+    border-radius:12px;
+    padding:16px;
+    margin:16px 0;
+    text-align:center;
+  }
+  .mon-serving span{font-size:11.5px;font-weight:700;color:var(--blue-700);text-transform:uppercase;letter-spacing:.06em;}
+  .mon-serving b{display:block;font-size:26px;font-weight:800;color:var(--navy-900);margin-top:4px;}
+  .mon-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;}
+  .mon-list li{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 12px;border-radius:9px;
+    background:#fbfcfe;border:1px solid var(--border);
+    font-size:13.5px;font-weight:600;color:var(--navy-700);
+  }
+  .mon-list li.mine{background:var(--blue-50);border-color:var(--blue-100);color:var(--blue-700);}
+  .mon-empty{font-size:13px;color:var(--navy-500);text-align:center;padding:14px 0;}
+  .refresh-row{display:flex;justify-content:flex-end;margin-bottom:16px;}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--navy-700);}
+  .btn-ghost:hover{border-color:var(--blue-500);color:var(--blue-700);}
+
+  /* ===== Admin ===== */
+  .admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px;}
+  .admin-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:18px;padding:24px;box-shadow:var(--shadow-sm);
+  }
+  .admin-card h4{margin:0 0 14px;font-size:16px;font-weight:700;}
+  .admin-row{display:flex;justify-content:space-between;font-size:13.5px;color:var(--navy-500);margin-bottom:8px;}
+  .admin-row b{color:var(--navy-900);}
+  .admin-actions{display:flex;gap:8px;margin-top:16px;}
+  .admin-actions .btn{flex:1;padding:11px;font-size:13.5px;}
+
+  .admin-table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .admin-table th,.admin-table td{text-align:left;padding:12px 16px;font-size:13.5px;border-bottom:1px solid var(--border);}
+  .admin-table th{background:#fbfcfe;color:var(--navy-500);font-weight:700;text-transform:uppercase;font-size:11.5px;letter-spacing:.05em;}
+  .status-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;}
+  .status-pill.waiting{background:var(--amber-50);color:var(--amber-500);}
+  .status-pill.called{background:var(--blue-50);color:var(--blue-700);}
+  .status-pill.done{background:var(--green-50);color:var(--green-500);}
+
+  /* ===== Footer ===== */
+  footer{
+    border-top:1px solid var(--border);
+    background:var(--surface);
+    padding:36px 0;
+  }
+  .footer-wrap{
+    display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:16px;
+  }
+  .footer-brand{
+    display:flex;align-items:center;gap:9px;
+    font-weight:800;color:var(--blue-600);font-size:16px;
+  }
+  .footer-note{font-size:13px;color:var(--navy-500);}
+
+  /* ===== Responsive ===== */
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr;}
+    .poli-grid{grid-template-columns:repeat(2,1fr);}
+    .steps-grid{grid-template-columns:1fr;}
+    .hero h1{font-size:36px;}
+  }
+  @media (max-width:720px){
+    .nav-wrap{padding:14px 20px;}
+    nav{display:none;}
+    .container{padding:0 20px;}
+    .hero-card{padding:32px 24px;}
+    .hero h1{font-size:30px;}
+    .hero-stats{gap:18px;flex-wrap:wrap;}
+    .poli-grid{grid-template-columns:1fr;}
+    .queue-number{font-size:50px;}
+  }
+</style>
 </head>
-<body
-    class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
-<header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
-    @if (Route::has('filament.admin.auth.login'))
-        <nav class="flex items-center justify-end gap-4">
-            @auth
-                <a
-                    href="{{ route('filament.admin.pages.dashboard') }}"
-                    class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-                >
-                    Dashboard
-                </a>
-            @else
-                <a
-                    href="{{ route('filament.admin.auth.login') }}"
-                    class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
-                >
-                    Log in
-                </a>
+<body>
 
-                @if (Route::has('filament.auth.register'))
-                    <a
-                        href="{{ route('filament.auth.register') }}"
-                        class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                        Register
-                    </a>
-                @endif
-            @endauth
-        </nav>
-    @endif
+<div class="top-accent"></div>
+
+<header>
+  <div class="nav-wrap">
+    <a href="#" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12h4l2-6 4 12 2-6h4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      PoliQueue
+    </a>
+    <nav>
+      <a href="#home" class="nav-link active" data-view="home" onclick="showView('home');return false;">Beranda</a>
+      <a href="#ambil" class="nav-link" data-view="ambil" onclick="showView('ambil');return false;">Ambil Antrian</a>
+      <a href="#monitoring" class="nav-link" data-view="monitoring" onclick="showView('monitoring');return false;">Monitoring</a>
+      <a href="#admin" class="nav-link admin" data-view="admin" onclick="showView('admin');return false;">Admin</a>
+    </nav>
+  </div>
 </header>
-<div
-    class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
-    <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
-        <div
-            class="text-[13px] leading-[20px] flex-1 p-6 pb-12 lg:p-20 bg-white dark:bg-[#161615] dark:text-[#EDEDEC] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-bl-lg rounded-br-lg lg:rounded-tl-lg lg:rounded-br-none">
-            <h1 class="mb-1 font-medium">Let's get started</h1>
-            <p class="mb-2 text-[#706f6c] dark:text-[#A1A09A]">Laravel has an incredibly rich ecosystem. <br>We suggest
-                starting with the following.</p>
-            <ul class="flex flex-col mb-4 lg:mb-6">
-                <li class="flex items-center gap-4 py-2 relative before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A] before:top-1/2 before:bottom-0 before:left-[0.4rem] before:absolute">
-                            <span class="relative py-1 bg-white dark:bg-[#161615]">
-                                <span
-                                    class="flex items-center justify-center rounded-full bg-[#FDFDFC] dark:bg-[#161615] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] w-3.5 h-3.5 border dark:border-[#3E3E3A] border-[#e3e3e0]">
-                                    <span class="rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A] w-1.5 h-1.5"></span>
-                                </span>
-                            </span>
-                    <span>
-                                Read the
-                                <a href="https://laravel.com/docs" target="_blank"
-                                   class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
-                                    <span>Documentation</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
-                                    </svg>
-                                </a>
-                            </span>
-                </li>
-                <li class="flex items-center gap-4 py-2 relative before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A] before:bottom-1/2 before:top-0 before:left-[0.4rem] before:absolute">
-                            <span class="relative py-1 bg-white dark:bg-[#161615]">
-                                <span
-                                    class="flex items-center justify-center rounded-full bg-[#FDFDFC] dark:bg-[#161615] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] w-3.5 h-3.5 border dark:border-[#3E3E3A] border-[#e3e3e0]">
-                                    <span class="rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A] w-1.5 h-1.5"></span>
-                                </span>
-                            </span>
-                    <span>
-                                Watch video tutorials at
-                                <a href="https://laracasts.com" target="_blank"
-                                   class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
-                                    <span>Laracasts</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
-                                    </svg>
-                                </a>
-                            </span>
-                </li>
-            </ul>
-            <ul class="flex gap-3 text-sm leading-normal">
-                <li>
-                    <a href="https://cloud.laravel.com" target="_blank"
-                       class="inline-block dark:bg-[#eeeeec] dark:border-[#eeeeec] dark:text-[#1C1C1A] dark:hover:bg-white dark:hover:border-white hover:bg-black hover:border-black px-5 py-1.5 bg-[#1b1b18] rounded-sm border border-black text-white text-sm leading-normal">
-                        Deploy now
-                    </a>
-                </li>
-            </ul>
+
+<main>
+<section id="view-home" class="view active">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+
+        <div class="hero-card">
+          <span class="chip"><span class="dot"></span> Antrian Poliklinik Real-Time</span>
+          <h1>Sistem Informasi<br><span>Antrian Poliklinik</span></h1>
+          <p>Ambil nomor antrian secara online, lihat estimasi waktu tunggu, dan pantau status panggilan pasien melalui halaman monitoring — tanpa perlu mengantre di loket.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="showView('ambil')">
+              Ambil Nomor Antrian
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="btn btn-secondary" onclick="showView('monitoring')">
+              Lihat Monitoring
+            </button>
+          </div>
+
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <b>3</b>
+              <span>Poliklinik Aktif</span>
+            </div>
+            <div class="hero-stat">
+              <b>128</b>
+              <span>Antrian Hari Ini</span>
+            </div>
+            <div class="hero-stat">
+              <b>~12 mnt</b>
+              <span>Rata-rata Tunggu</span>
+            </div>
+          </div>
         </div>
-        <div
-            class="bg-[#fff2f2] dark:bg-[#1D0002] relative lg:-ml-px -mb-px lg:mb-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg aspect-[335/376] lg:aspect-auto w-full lg:w-[438px] shrink-0 overflow-hidden">
-            {{-- Laravel Logo --}}
-            <svg
-                class="w-full text-[#F53003] dark:text-[#F61500] transition-all translate-y-0 opacity-100 max-w-none duration-750 starting:opacity-0 starting:translate-y-6"
-                viewBox="0 0 438 104" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17.2036 -3H0V102.197H49.5189V86.7187H17.2036V-3Z" fill="currentColor"/>
-                <path
-                    d="M110.256 41.6337C108.061 38.1275 104.945 35.3731 100.905 33.3681C96.8667 31.3647 92.8016 30.3618 88.7131 30.3618C83.4247 30.3618 78.5885 31.3389 74.201 33.2923C69.8111 35.2456 66.0474 37.928 62.9059 41.3333C59.7643 44.7401 57.3198 48.6726 55.5754 53.1293C53.8287 57.589 52.9572 62.274 52.9572 67.1813C52.9572 72.1925 53.8287 76.8995 55.5754 81.3069C57.3191 85.7173 59.7636 89.6241 62.9059 93.0293C66.0474 96.4361 69.8119 99.1155 74.201 101.069C78.5885 103.022 83.4247 103.999 88.7131 103.999C92.8016 103.999 96.8667 102.997 100.905 100.994C104.945 98.9911 108.061 96.2359 110.256 92.7282V102.195H126.563V32.1642H110.256V41.6337ZM108.76 75.7472C107.762 78.4531 106.366 80.8078 104.572 82.8112C102.776 84.8161 100.606 86.4183 98.0637 87.6206C95.5202 88.823 92.7004 89.4238 89.6103 89.4238C86.5178 89.4238 83.7252 88.823 81.2324 87.6206C78.7388 86.4183 76.5949 84.8161 74.7998 82.8112C73.004 80.8078 71.6319 78.4531 70.6856 75.7472C69.7356 73.0421 69.2644 70.1868 69.2644 67.1821C69.2644 64.1758 69.7356 61.3205 70.6856 58.6154C71.6319 55.9102 73.004 53.5571 74.7998 51.5522C76.5949 49.5495 78.738 47.9451 81.2324 46.7427C83.7252 45.5404 86.5178 44.9396 89.6103 44.9396C92.7012 44.9396 95.5202 45.5404 98.0637 46.7427C100.606 47.9451 102.776 49.5487 104.572 51.5522C106.367 53.5571 107.762 55.9102 108.76 58.6154C109.756 61.3205 110.256 64.1758 110.256 67.1821C110.256 70.1868 109.756 73.0421 108.76 75.7472Z"
-                    fill="currentColor"/>
-                <path
-                    d="M242.805 41.6337C240.611 38.1275 237.494 35.3731 233.455 33.3681C229.416 31.3647 225.351 30.3618 221.262 30.3618C215.974 30.3618 211.138 31.3389 206.75 33.2923C202.36 35.2456 198.597 37.928 195.455 41.3333C192.314 44.7401 189.869 48.6726 188.125 53.1293C186.378 57.589 185.507 62.274 185.507 67.1813C185.507 72.1925 186.378 76.8995 188.125 81.3069C189.868 85.7173 192.313 89.6241 195.455 93.0293C198.597 96.4361 202.361 99.1155 206.75 101.069C211.138 103.022 215.974 103.999 221.262 103.999C225.351 103.999 229.416 102.997 233.455 100.994C237.494 98.9911 240.611 96.2359 242.805 92.7282V102.195H259.112V32.1642H242.805V41.6337ZM241.31 75.7472C240.312 78.4531 238.916 80.8078 237.122 82.8112C235.326 84.8161 233.156 86.4183 230.614 87.6206C228.07 88.823 225.251 89.4238 222.16 89.4238C219.068 89.4238 216.275 88.823 213.782 87.6206C211.289 86.4183 209.145 84.8161 207.35 82.8112C205.554 80.8078 204.182 78.4531 203.236 75.7472C202.286 73.0421 201.814 70.1868 201.814 67.1821C201.814 64.1758 202.286 61.3205 203.236 58.6154C204.182 55.9102 205.554 53.5571 207.35 51.5522C209.145 49.5495 211.288 47.9451 213.782 46.7427C216.275 45.5404 219.068 44.9396 222.16 44.9396C225.251 44.9396 228.07 45.5404 230.614 46.7427C233.156 47.9451 235.326 49.5487 237.122 51.5522C238.917 53.5571 240.312 55.9102 241.31 58.6154C242.306 61.3205 242.806 64.1758 242.806 67.1821C242.805 70.1868 242.305 73.0421 241.31 75.7472Z"
-                    fill="currentColor"/>
-                <path d="M438 -3H421.694V102.197H438V-3Z" fill="currentColor"/>
-                <path d="M139.43 102.197H155.735V48.2834H183.712V32.1665H139.43V102.197Z" fill="currentColor"/>
-                <path
-                    d="M324.49 32.1665L303.995 85.794L283.498 32.1665H266.983L293.748 102.197H314.242L341.006 32.1665H324.49Z"
-                    fill="currentColor"/>
-                <path
-                    d="M376.571 30.3656C356.603 30.3656 340.797 46.8497 340.797 67.1828C340.797 89.6597 356.094 104 378.661 104C391.29 104 399.354 99.1488 409.206 88.5848L398.189 80.0226C398.183 80.031 389.874 90.9895 377.468 90.9895C363.048 90.9895 356.977 79.3111 356.977 73.269H411.075C413.917 50.1328 398.775 30.3656 376.571 30.3656ZM357.02 61.0967C357.145 59.7487 359.023 43.3761 376.442 43.3761C393.861 43.3761 395.978 59.7464 396.099 61.0967H357.02Z"
-                    fill="currentColor"/>
-            </svg>
 
-            {{-- Light Mode 12 SVG --}}
-            <svg class="w-[448px] max-w-none relative -mt-[4.9rem] -ml-8 lg:ml-0 lg:-mt-[6.6rem] dark:hidden"
-                 viewBox="0 0 440 376" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M188.263 355.73L188.595 355.73C195.441 348.845 205.766 339.761 219.569 328.477C232.93 317.193 242.978 308.205 249.714 301.511C256.34 294.626 260.867 287.358 263.296 279.708C265.725 272.058 264.565 264.121 259.816 255.896C254.516 246.716 247.062 239.352 237.454 233.805C227.957 228.067 217.908 225.198 207.307 225.198C196.927 225.197 190.136 227.97 186.934 233.516C183.621 238.872 184.726 246.331 190.247 255.894L125.647 255.891C116.371 239.825 112.395 225.481 113.72 212.858C115.265 200.235 121.559 190.481 132.602 183.596C143.754 176.52 158.607 172.982 177.159 172.983C196.594 172.984 215.863 176.523 234.968 183.6C253.961 190.486 271.299 200.241 286.98 212.864C302.661 225.488 315.14 239.833 324.416 255.899C333.03 270.817 336.841 283.918 335.847 295.203C335.075 306.487 331.376 316.336 324.75 324.751C318.346 333.167 308.408 343.494 294.936 355.734L377.094 355.737L405.917 405.656L217.087 405.649L188.263 355.73Z"
-                        fill="black"/>
-                    <path
-                        d="M9.11884 226.339L-13.7396 226.338L-42.7286 176.132L43.0733 176.135L175.595 405.649L112.651 405.647L9.11884 226.339Z"
-                        fill="black"/>
-                    <path
-                        d="M188.263 355.73L188.595 355.73C195.441 348.845 205.766 339.761 219.569 328.477C232.93 317.193 242.978 308.205 249.714 301.511C256.34 294.626 260.867 287.358 263.296 279.708C265.725 272.058 264.565 264.121 259.816 255.896C254.516 246.716 247.062 239.352 237.454 233.805C227.957 228.067 217.908 225.198 207.307 225.198C196.927 225.197 190.136 227.97 186.934 233.516C183.621 238.872 184.726 246.331 190.247 255.894L125.647 255.891C116.371 239.825 112.395 225.481 113.72 212.858C115.265 200.235 121.559 190.481 132.602 183.596C143.754 176.52 158.607 172.982 177.159 172.983C196.594 172.984 215.863 176.523 234.968 183.6C253.961 190.486 271.299 200.241 286.98 212.864C302.661 225.488 315.14 239.833 324.416 255.899C333.03 270.817 336.841 283.918 335.847 295.203C335.075 306.487 331.376 316.336 324.75 324.751C318.346 333.167 308.408 343.494 294.936 355.734L377.094 355.737L405.917 405.656L217.087 405.649L188.263 355.73Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                    <path
-                        d="M9.11884 226.339L-13.7396 226.338L-42.7286 176.132L43.0733 176.135L175.595 405.649L112.651 405.647L9.11884 226.339Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                    <path
-                        d="M204.592 327.449L204.923 327.449C211.769 320.564 222.094 311.479 235.897 300.196C249.258 288.912 259.306 279.923 266.042 273.23C272.668 266.345 277.195 259.077 279.624 251.427C282.053 243.777 280.893 235.839 276.145 227.615C270.844 218.435 263.39 211.071 253.782 205.524C244.285 199.786 234.236 196.917 223.635 196.916C213.255 196.916 206.464 199.689 203.262 205.235C199.949 210.59 201.054 218.049 206.575 227.612L141.975 227.61C132.699 211.544 128.723 197.2 130.048 184.577C131.593 171.954 137.887 162.2 148.93 155.315C160.083 148.239 174.935 144.701 193.487 144.702C212.922 144.703 232.192 148.242 251.296 155.319C270.289 162.205 287.627 171.96 303.308 184.583C318.989 197.207 331.468 211.552 340.745 227.618C349.358 242.536 353.169 255.637 352.175 266.921C351.403 278.205 347.704 288.055 341.078 296.47C334.674 304.885 324.736 315.213 311.264 327.453L393.422 327.456L422.246 377.375L233.415 377.368L204.592 327.449Z"
-                        fill="#F8B803"/>
-                    <path
-                        d="M25.447 198.058L2.58852 198.057L-26.4005 147.851L59.4015 147.854L191.923 377.368L128.979 377.365L25.447 198.058Z"
-                        fill="#F8B803"/>
-                    <path
-                        d="M204.592 327.449L204.923 327.449C211.769 320.564 222.094 311.479 235.897 300.196C249.258 288.912 259.306 279.923 266.042 273.23C272.668 266.345 277.195 259.077 279.624 251.427C282.053 243.777 280.893 235.839 276.145 227.615C270.844 218.435 263.39 211.071 253.782 205.524C244.285 199.786 234.236 196.917 223.635 196.916C213.255 196.916 206.464 199.689 203.262 205.235C199.949 210.59 201.054 218.049 206.575 227.612L141.975 227.61C132.699 211.544 128.723 197.2 130.048 184.577C131.593 171.954 137.887 162.2 148.93 155.315C160.083 148.239 174.935 144.701 193.487 144.702C212.922 144.703 232.192 148.242 251.296 155.319C270.289 162.205 287.627 171.96 303.308 184.583C318.989 197.207 331.468 211.552 340.745 227.618C349.358 242.536 353.169 255.637 352.175 266.921C351.403 278.205 347.704 288.055 341.078 296.47C334.674 304.885 324.736 315.213 311.264 327.453L393.422 327.456L422.246 377.375L233.415 377.368L204.592 327.449Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                    <path
-                        d="M25.447 198.058L2.58852 198.057L-26.4005 147.851L59.4015 147.854L191.923 377.368L128.979 377.365L25.447 198.058Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                </g>
-                <g style="mix-blend-mode: hard-light"
-                   class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M217.342 305.363L217.673 305.363C224.519 298.478 234.844 289.393 248.647 278.11C262.008 266.826 272.056 257.837 278.792 251.144C285.418 244.259 289.945 236.991 292.374 229.341C294.803 221.691 293.643 213.753 288.895 205.529C283.594 196.349 276.14 188.985 266.532 183.438C257.035 177.7 246.986 174.831 236.385 174.83C226.005 174.83 219.214 177.603 216.012 183.149C212.699 188.504 213.804 195.963 219.325 205.527L154.725 205.524C145.449 189.458 141.473 175.114 142.798 162.491C144.343 149.868 150.637 140.114 161.68 133.229C172.833 126.153 187.685 122.615 206.237 122.616C225.672 122.617 244.942 126.156 264.046 133.233C283.039 140.119 300.377 149.874 316.058 162.497C331.739 175.121 344.218 189.466 353.495 205.532C362.108 220.45 365.919 233.551 364.925 244.835C364.153 256.12 360.454 265.969 353.828 274.384C347.424 282.799 337.486 293.127 324.014 305.367L406.172 305.37L434.996 355.289L246.165 355.282L217.342 305.363Z"
-                        fill="#F0ACB8"/>
-                    <path
-                        d="M38.197 175.972L15.3385 175.971L-13.6505 125.765L72.1515 125.768L204.673 355.282L141.729 355.279L38.197 175.972Z"
-                        fill="#F0ACB8"/>
-                    <path
-                        d="M217.342 305.363L217.673 305.363C224.519 298.478 234.844 289.393 248.647 278.11C262.008 266.826 272.056 257.837 278.792 251.144C285.418 244.259 289.945 236.991 292.374 229.341C294.803 221.691 293.643 213.753 288.895 205.529C283.594 196.349 276.14 188.985 266.532 183.438C257.035 177.7 246.986 174.831 236.385 174.83C226.005 174.83 219.214 177.603 216.012 183.149C212.699 188.504 213.804 195.963 219.325 205.527L154.725 205.524C145.449 189.458 141.473 175.114 142.798 162.491C144.343 149.868 150.637 140.114 161.68 133.229C172.833 126.153 187.685 122.615 206.237 122.616C225.672 122.617 244.942 126.156 264.046 133.233C283.039 140.119 300.377 149.874 316.058 162.497C331.739 175.121 344.218 189.466 353.495 205.532C362.108 220.45 365.919 233.551 364.925 244.835C364.153 256.12 360.454 265.969 353.828 274.384C347.424 282.799 337.486 293.127 324.014 305.367L406.172 305.37L434.996 355.289L246.165 355.282L217.342 305.363Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                    <path
-                        d="M38.197 175.972L15.3385 175.971L-13.6505 125.765L72.1515 125.768L204.673 355.282L141.729 355.279L38.197 175.972Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                </g>
-                <g style="mix-blend-mode: plus-darker"
-                   class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M230.951 281.792L231.282 281.793C238.128 274.907 248.453 265.823 262.256 254.539C275.617 243.256 285.666 234.267 292.402 227.573C299.027 220.688 303.554 213.421 305.983 205.771C308.412 198.12 307.253 190.183 302.504 181.959C297.203 172.778 289.749 165.415 280.142 159.868C270.645 154.13 260.596 151.26 249.995 151.26C239.615 151.26 232.823 154.033 229.621 159.579C226.309 164.934 227.413 172.393 232.935 181.956L168.335 181.954C159.058 165.888 155.082 151.543 156.407 138.92C157.953 126.298 164.247 116.544 175.289 109.659C186.442 102.583 201.294 99.045 219.846 99.0457C239.281 99.0464 258.551 102.585 277.655 109.663C296.649 116.549 313.986 126.303 329.667 138.927C345.349 151.551 357.827 165.895 367.104 181.961C375.718 196.88 379.528 209.981 378.535 221.265C377.762 232.549 374.063 242.399 367.438 250.814C361.033 259.229 351.095 269.557 337.624 281.796L419.782 281.8L448.605 331.719L259.774 331.712L230.951 281.792Z"
-                        fill="#F3BEC7"/>
-                    <path
-                        d="M51.8063 152.402L28.9479 152.401L-0.0411453 102.195L85.7608 102.198L218.282 331.711L155.339 331.709L51.8063 152.402Z"
-                        fill="#F3BEC7"/>
-                    <path
-                        d="M230.951 281.792L231.282 281.793C238.128 274.907 248.453 265.823 262.256 254.539C275.617 243.256 285.666 234.267 292.402 227.573C299.027 220.688 303.554 213.421 305.983 205.771C308.412 198.12 307.253 190.183 302.504 181.959C297.203 172.778 289.749 165.415 280.142 159.868C270.645 154.13 260.596 151.26 249.995 151.26C239.615 151.26 232.823 154.033 229.621 159.579C226.309 164.934 227.413 172.393 232.935 181.956L168.335 181.954C159.058 165.888 155.082 151.543 156.407 138.92C157.953 126.298 164.247 116.544 175.289 109.659C186.442 102.583 201.294 99.045 219.846 99.0457C239.281 99.0464 258.551 102.585 277.655 109.663C296.649 116.549 313.986 126.303 329.667 138.927C345.349 151.551 357.827 165.895 367.104 181.961C375.718 196.88 379.528 209.981 378.535 221.265C377.762 232.549 374.063 242.399 367.438 250.814C361.033 259.229 351.095 269.557 337.624 281.796L419.782 281.8L448.605 331.719L259.774 331.712L230.951 281.792Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                    <path
-                        d="M51.8063 152.402L28.9479 152.401L-0.0411453 102.195L85.7608 102.198L218.282 331.711L155.339 331.709L51.8063 152.402Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                </g>
-                <g class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M188.467 355.363L188.798 355.363C195.644 348.478 205.969 339.393 219.772 328.11C233.133 316.826 243.181 307.837 249.917 301.144C253.696 297.217 256.792 293.166 259.205 288.991C261.024 285.845 262.455 282.628 263.499 279.341C265.928 271.691 264.768 263.753 260.02 255.529C254.719 246.349 247.265 238.985 237.657 233.438C228.16 227.7 218.111 224.831 207.51 224.83C197.13 224.83 190.339 227.603 187.137 233.149C183.824 238.504 184.929 245.963 190.45 255.527L125.851 255.524C116.574 239.458 112.598 225.114 113.923 212.491C114.615 206.836 116.261 201.756 118.859 197.253C122.061 191.704 126.709 187.03 132.805 183.229C143.958 176.153 158.81 172.615 177.362 172.616C196.797 172.617 216.067 176.156 235.171 183.233C254.164 190.119 271.502 199.874 287.183 212.497C302.864 225.121 315.343 239.466 324.62 255.532C333.233 270.45 337.044 283.551 336.05 294.835C335.46 303.459 333.16 311.245 329.151 318.194C327.915 320.337 326.515 322.4 324.953 324.384C318.549 332.799 308.611 343.127 295.139 355.367L377.297 355.37L406.121 405.289L217.29 405.282L188.467 355.363Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M9.32197 225.972L-13.5365 225.971L-42.5255 175.765L43.2765 175.768L175.798 405.282L112.854 405.279L9.32197 225.972Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M345.247 111.915C329.566 99.2919 312.229 89.5371 293.235 82.6512L235.167 183.228C254.161 190.114 271.498 199.869 287.179 212.492L345.247 111.915Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M382.686 154.964C373.41 138.898 360.931 124.553 345.25 111.93L287.182 212.506C302.863 225.13 315.342 239.475 324.618 255.541L382.686 154.964Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M293.243 82.6472C274.139 75.57 254.869 72.031 235.434 72.0303L177.366 172.607C196.801 172.608 216.071 176.147 235.175 183.224L293.243 82.6472Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M394.118 194.257C395.112 182.973 391.301 169.872 382.688 154.953L324.619 255.53C333.233 270.448 337.044 283.55 336.05 294.834L394.118 194.257Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M235.432 72.0311C216.88 72.0304 202.027 75.5681 190.875 82.6442L132.806 183.221C143.959 176.145 158.812 172.607 177.363 172.608L235.432 72.0311Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M265.59 124.25C276.191 124.251 286.24 127.12 295.737 132.858L237.669 233.435C228.172 227.697 218.123 224.828 207.522 224.827L265.59 124.25Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M295.719 132.859C305.326 138.406 312.78 145.77 318.081 154.95L260.013 255.527C254.712 246.347 247.258 238.983 237.651 233.436L295.719 132.859Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M387.218 217.608C391.227 210.66 393.527 202.874 394.117 194.25L336.049 294.827C335.459 303.451 333.159 311.237 329.15 318.185L387.218 217.608Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M245.211 132.577C248.413 127.03 255.204 124.257 265.584 124.258L207.516 224.835C197.136 224.834 190.345 227.607 187.143 233.154L245.211 132.577Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M318.094 154.945C322.842 163.17 324.002 171.107 321.573 178.757L263.505 279.334C265.934 271.684 264.774 263.746 260.026 255.522L318.094 154.945Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M176.925 96.6737C180.127 91.1249 184.776 86.4503 190.871 82.6499L132.803 183.227C126.708 187.027 122.059 191.702 118.857 197.25L176.925 96.6737Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M387.226 217.606C385.989 219.749 384.59 221.813 383.028 223.797L324.96 324.373C326.522 322.39 327.921 320.326 329.157 318.183L387.226 217.606Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M317.269 188.408C319.087 185.262 320.519 182.045 321.562 178.758L263.494 279.335C262.451 282.622 261.019 285.839 259.201 288.985L317.269 188.408Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M245.208 132.573C241.895 137.928 243 145.387 248.522 154.95L190.454 255.527C184.932 245.964 183.827 238.505 187.14 233.15L245.208 132.573Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M176.93 96.6719C174.331 101.175 172.686 106.255 171.993 111.91L113.925 212.487C114.618 206.831 116.263 201.752 118.862 197.249L176.93 96.6719Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M317.266 188.413C314.853 192.589 311.757 196.64 307.978 200.566L249.91 301.143C253.689 297.216 256.785 293.166 259.198 288.99L317.266 188.413Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M464.198 304.708L435.375 254.789L377.307 355.366L406.13 405.285L464.198 304.708Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M353.209 254.787C366.68 242.548 376.618 232.22 383.023 223.805L324.955 324.382C318.55 332.797 308.612 343.124 295.141 355.364L353.209 254.787Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M435.37 254.787L353.212 254.784L295.144 355.361L377.302 355.364L435.37 254.787Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M183.921 154.947L248.521 154.95L190.453 255.527L125.853 255.524L183.921 154.947Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M171.992 111.914C170.668 124.537 174.643 138.881 183.92 154.947L125.852 255.524C116.575 239.458 112.599 225.114 113.924 212.491L171.992 111.914Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M307.987 200.562C301.251 207.256 291.203 216.244 277.842 227.528L219.774 328.105C233.135 316.821 243.183 307.832 249.919 301.139L307.987 200.562Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M15.5469 75.1797L44.5359 125.386L-13.5321 225.963L-42.5212 175.756L15.5469 75.1797Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M277.836 227.536C264.033 238.82 253.708 247.904 246.862 254.789L188.794 355.366C195.64 348.481 205.965 339.397 219.768 328.113L277.836 227.536Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M275.358 304.706L464.189 304.713L406.12 405.29L217.29 405.283L275.358 304.706Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M44.5279 125.39L67.3864 125.39L9.31834 225.967L-13.5401 225.966L44.5279 125.39Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M101.341 75.1911L233.863 304.705L175.795 405.282L43.2733 175.768L101.341 75.1911ZM15.5431 75.19L-42.525 175.767L43.277 175.77L101.345 75.1932L15.5431 75.19Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M246.866 254.784L246.534 254.784L188.466 355.361L188.798 355.361L246.866 254.784Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M246.539 254.781L275.362 304.701L217.294 405.277L188.471 355.358L246.539 254.781Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M67.3906 125.391L170.923 304.698L112.855 405.275L9.32257 225.967L67.3906 125.391Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M170.921 304.699L233.865 304.701L175.797 405.278L112.853 405.276L170.921 304.699Z"
-                          stroke="#1B1B18" stroke-width="1" stroke-linejoin="bevel"/>
-                </g>
-                <g style="mix-blend-mode: hard-light"
-                   class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M246.544 254.79L246.875 254.79C253.722 247.905 264.046 238.82 277.849 227.537C291.21 216.253 301.259 207.264 307.995 200.57C314.62 193.685 319.147 186.418 321.577 178.768C324.006 171.117 322.846 163.18 318.097 154.956C312.796 145.775 305.342 138.412 295.735 132.865C286.238 127.127 276.189 124.258 265.588 124.257C255.208 124.257 248.416 127.03 245.214 132.576C241.902 137.931 243.006 145.39 248.528 154.953L183.928 154.951C174.652 138.885 170.676 124.541 172 111.918C173.546 99.2946 179.84 89.5408 190.882 82.6559C202.035 75.5798 216.887 72.0421 235.439 72.0428C254.874 72.0435 274.144 75.5825 293.248 82.6598C312.242 89.5457 329.579 99.3005 345.261 111.924C360.942 124.548 373.421 138.892 382.697 154.958C391.311 169.877 395.121 182.978 394.128 194.262C393.355 205.546 389.656 215.396 383.031 223.811C376.627 232.226 366.688 242.554 353.217 254.794L435.375 254.797L464.198 304.716L275.367 304.709L246.544 254.79Z"
-                        fill="#F0ACB8"/>
-                    <path
-                        d="M246.544 254.79L246.875 254.79C253.722 247.905 264.046 238.82 277.849 227.537C291.21 216.253 301.259 207.264 307.995 200.57C314.62 193.685 319.147 186.418 321.577 178.768C324.006 171.117 322.846 163.18 318.097 154.956C312.796 145.775 305.342 138.412 295.735 132.865C286.238 127.127 276.189 124.258 265.588 124.257C255.208 124.257 248.416 127.03 245.214 132.576C241.902 137.931 243.006 145.39 248.528 154.953L183.928 154.951C174.652 138.885 170.676 124.541 172 111.918C173.546 99.2946 179.84 89.5408 190.882 82.6559C202.035 75.5798 216.887 72.0421 235.439 72.0428C254.874 72.0435 274.144 75.5825 293.248 82.6598C312.242 89.5457 329.579 99.3005 345.261 111.924C360.942 124.548 373.421 138.892 382.697 154.958C391.311 169.877 395.121 182.978 394.128 194.262C393.355 205.546 389.656 215.396 383.031 223.811C376.627 232.226 366.688 242.554 353.217 254.794L435.375 254.797L464.198 304.716L275.367 304.709L246.544 254.79Z"
-                        stroke="#1B1B18" stroke-width="1" stroke-linejoin="round"/>
-                </g>
-                <g style="mix-blend-mode: hard-light"
-                   class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M67.41 125.402L44.5515 125.401L15.5625 75.1953L101.364 75.1985L233.886 304.712L170.942 304.71L67.41 125.402Z"
-                        fill="#F0ACB8"/>
-                    <path
-                        d="M67.41 125.402L44.5515 125.401L15.5625 75.1953L101.364 75.1985L233.886 304.712L170.942 304.71L67.41 125.402Z"
-                        stroke="#1B1B18" stroke-width="1"/>
-                </g>
-            </svg>
+        <div class="queue-card">
+          <div class="queue-card-top">
+            <span class="queue-label">Contoh Nomor</span>
+            <span class="live-pill"><span class="dot"></span> Live</span>
+          </div>
+          <div class="queue-number" id="home-queue-number">UMU&#8209;001</div>
+          <div class="queue-meta">
+            <span id="home-queue-poli">Poli Umum</span>
+            <span class="status-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Menunggu
+            </span>
+          </div>
 
-            {{-- Dark Mode 12 SVG --}}
-            <svg class="w-[448px] max-w-none relative -mt-[4.9rem] -ml-8 lg:ml-0 lg:-mt-[6.6rem] hidden dark:block"
-                 viewBox="0 0 440 376" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M188.263 355.73L188.595 355.73C195.441 348.845 205.766 339.761 219.569 328.477C232.93 317.193 242.978 308.205 249.714 301.511C256.34 294.626 260.867 287.358 263.296 279.708C265.725 272.058 264.565 264.121 259.816 255.896C254.516 246.716 247.062 239.352 237.454 233.805C227.957 228.067 217.908 225.198 207.307 225.198C196.927 225.197 190.136 227.97 186.934 233.516C183.621 238.872 184.726 246.331 190.247 255.894L125.647 255.891C116.371 239.825 112.395 225.481 113.72 212.858C115.265 200.235 121.559 190.481 132.602 183.596C143.754 176.52 158.607 172.982 177.159 172.983C196.594 172.984 215.863 176.523 234.968 183.6C253.961 190.486 271.299 200.241 286.98 212.864C302.661 225.488 315.14 239.833 324.416 255.899C333.03 270.817 336.841 283.918 335.847 295.203C335.075 306.487 331.376 316.336 324.75 324.751C318.346 333.167 308.408 343.494 294.936 355.734L377.094 355.737L405.917 405.656L217.087 405.649L188.263 355.73Z"
-                        fill="black"/>
-                    <path
-                        d="M9.11884 226.339L-13.7396 226.338L-42.7286 176.132L43.0733 176.135L175.595 405.649L112.651 405.647L9.11884 226.339Z"
-                        fill="black"/>
-                    <path
-                        d="M188.263 355.73L188.595 355.73C195.441 348.845 205.766 339.761 219.569 328.477C232.93 317.193 242.978 308.205 249.714 301.511C256.34 294.626 260.867 287.358 263.296 279.708C265.725 272.058 264.565 264.121 259.816 255.896C254.516 246.716 247.062 239.352 237.454 233.805C227.957 228.067 217.908 225.198 207.307 225.198C196.927 225.197 190.136 227.97 186.934 233.516C183.621 238.872 184.726 246.331 190.247 255.894L125.647 255.891C116.371 239.825 112.395 225.481 113.72 212.858C115.265 200.235 121.559 190.481 132.602 183.596C143.754 176.52 158.607 172.982 177.159 172.983C196.594 172.984 215.863 176.523 234.968 183.6C253.961 190.486 271.299 200.241 286.98 212.864C302.661 225.488 315.14 239.833 324.416 255.899C333.03 270.817 336.841 283.918 335.847 295.203C335.075 306.487 331.376 316.336 324.75 324.751C318.346 333.167 308.408 343.494 294.936 355.734L377.094 355.737L405.917 405.656L217.087 405.649L188.263 355.73Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                    <path
-                        d="M9.11884 226.339L-13.7396 226.338L-42.7286 176.132L43.0733 176.135L175.595 405.649L112.651 405.647L9.11884 226.339Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                    <path
-                        d="M204.592 327.449L204.923 327.449C211.769 320.564 222.094 311.479 235.897 300.196C249.258 288.912 259.306 279.923 266.042 273.23C272.668 266.345 277.195 259.077 279.624 251.427C282.053 243.777 280.893 235.839 276.145 227.615C270.844 218.435 263.39 211.071 253.782 205.524C244.285 199.786 234.236 196.917 223.635 196.916C213.255 196.916 206.464 199.689 203.262 205.235C199.949 210.59 201.054 218.049 206.575 227.612L141.975 227.61C132.699 211.544 128.723 197.2 130.048 184.577C131.593 171.954 137.887 162.2 148.93 155.315C160.083 148.239 174.935 144.701 193.487 144.702C212.922 144.703 232.192 148.242 251.296 155.319C270.289 162.205 287.627 171.96 303.308 184.583C318.989 197.207 331.468 211.552 340.745 227.618C349.358 242.536 353.169 255.637 352.175 266.921C351.403 278.205 347.704 288.055 341.078 296.47C334.674 304.885 324.736 315.213 311.264 327.453L393.422 327.456L422.246 377.375L233.415 377.368L204.592 327.449Z"
-                        fill="#391800"/>
-                    <path
-                        d="M25.447 198.058L2.58852 198.057L-26.4005 147.851L59.4015 147.854L191.923 377.368L128.979 377.365L25.447 198.058Z"
-                        fill="#391800"/>
-                    <path
-                        d="M204.592 327.449L204.923 327.449C211.769 320.564 222.094 311.479 235.897 300.196C249.258 288.912 259.306 279.923 266.042 273.23C272.668 266.345 277.195 259.077 279.624 251.427C282.053 243.777 280.893 235.839 276.145 227.615C270.844 218.435 263.39 211.071 253.782 205.524C244.285 199.786 234.236 196.917 223.635 196.916C213.255 196.916 206.464 199.689 203.262 205.235C199.949 210.59 201.054 218.049 206.575 227.612L141.975 227.61C132.699 211.544 128.723 197.2 130.048 184.577C131.593 171.954 137.887 162.2 148.93 155.315C160.083 148.239 174.935 144.701 193.487 144.702C212.922 144.703 232.192 148.242 251.296 155.319C270.289 162.205 287.627 171.96 303.308 184.583C318.989 197.207 331.468 211.552 340.745 227.618C349.358 242.536 353.169 255.637 352.175 266.921C351.403 278.205 347.704 288.055 341.078 296.47C334.674 304.885 324.736 315.213 311.264 327.453L393.422 327.456L422.246 377.375L233.415 377.368L204.592 327.449Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                    <path
-                        d="M25.447 198.058L2.58852 198.057L-26.4005 147.851L59.4015 147.854L191.923 377.368L128.979 377.365L25.447 198.058Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                </g>
-                <g class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4"
-                   style="mix-blend-mode:hard-light">
-                    <path
-                        d="M217.342 305.363L217.673 305.363C224.519 298.478 234.844 289.393 248.647 278.11C262.008 266.826 272.056 257.837 278.792 251.144C285.418 244.259 289.945 236.991 292.374 229.341C294.803 221.691 293.643 213.753 288.895 205.529C283.594 196.349 276.14 188.985 266.532 183.438C257.035 177.7 246.986 174.831 236.385 174.83C226.005 174.83 219.214 177.603 216.012 183.149C212.699 188.504 213.804 195.963 219.325 205.527L154.725 205.524C145.449 189.458 141.473 175.114 142.798 162.491C144.343 149.868 150.637 140.114 161.68 133.229C172.833 126.153 187.685 122.615 206.237 122.616C225.672 122.617 244.942 126.156 264.046 133.233C283.039 140.119 300.377 149.874 316.058 162.497C331.739 175.121 344.218 189.466 353.495 205.532C362.108 220.45 365.919 233.551 364.925 244.835C364.153 256.12 360.454 265.969 353.828 274.384C347.424 282.799 337.486 293.127 324.014 305.367L406.172 305.37L434.996 355.289L246.165 355.282L217.342 305.363Z"
-                        fill="#733000"/>
-                    <path
-                        d="M38.197 175.972L15.3385 175.971L-13.6505 125.765L72.1515 125.768L204.673 355.282L141.729 355.279L38.197 175.972Z"
-                        fill="#733000"/>
-                    <path
-                        d="M217.342 305.363L217.673 305.363C224.519 298.478 234.844 289.393 248.647 278.11C262.008 266.826 272.056 257.837 278.792 251.144C285.418 244.259 289.945 236.991 292.374 229.341C294.803 221.691 293.643 213.753 288.895 205.529C283.594 196.349 276.14 188.985 266.532 183.438C257.035 177.7 246.986 174.831 236.385 174.83C226.005 174.83 219.214 177.603 216.012 183.149C212.699 188.504 213.804 195.963 219.325 205.527L154.725 205.524C145.449 189.458 141.473 175.114 142.798 162.491C144.343 149.868 150.637 140.114 161.68 133.229C172.833 126.153 187.685 122.615 206.237 122.616C225.672 122.617 244.942 126.156 264.046 133.233C283.039 140.119 300.377 149.874 316.058 162.497C331.739 175.121 344.218 189.466 353.495 205.532C362.108 220.45 365.919 233.551 364.925 244.835C364.153 256.12 360.454 265.969 353.828 274.384C347.424 282.799 337.486 293.127 324.014 305.367L406.172 305.37L434.996 355.289L246.165 355.282L217.342 305.363Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                    <path
-                        d="M38.197 175.972L15.3385 175.971L-13.6505 125.765L72.1515 125.768L204.673 355.282L141.729 355.279L38.197 175.972Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                </g>
-                <g class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M217.342 305.363L217.673 305.363C224.519 298.478 234.844 289.393 248.647 278.11C262.008 266.826 272.056 257.837 278.792 251.144C285.418 244.259 289.945 236.991 292.374 229.341C294.803 221.691 293.643 213.753 288.895 205.529C283.594 196.349 276.14 188.985 266.532 183.438C257.035 177.7 246.986 174.831 236.385 174.83C226.005 174.83 219.214 177.603 216.012 183.149C212.699 188.504 213.804 195.963 219.325 205.527L154.726 205.524C145.449 189.458 141.473 175.114 142.798 162.491C144.343 149.868 150.637 140.114 161.68 133.229C172.833 126.153 187.685 122.615 206.237 122.616C225.672 122.617 244.942 126.156 264.046 133.233C283.039 140.119 300.377 149.874 316.058 162.497C331.739 175.121 344.218 189.466 353.495 205.532C362.108 220.45 365.919 233.551 364.925 244.835C364.153 256.12 360.454 265.969 353.828 274.384C347.424 282.799 337.486 293.127 324.014 305.367L406.172 305.37L434.996 355.289L246.165 355.282L217.342 305.363Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                    <path
-                        d="M38.197 175.972L15.3385 175.971L-13.6505 125.765L72.1515 125.768L204.673 355.282L141.729 355.279L38.197 175.972Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                </g>
-                <g class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4">
-                    <path
-                        d="M188.467 355.363L188.798 355.363C195.644 348.478 205.969 339.393 219.772 328.11C233.133 316.826 243.181 307.837 249.917 301.144C253.696 297.217 256.792 293.166 259.205 288.991C261.024 285.845 262.455 282.628 263.499 279.341C265.928 271.691 264.768 263.753 260.02 255.529C254.719 246.349 247.265 238.985 237.657 233.438C228.16 227.7 218.111 224.831 207.51 224.83C197.13 224.83 190.339 227.603 187.137 233.149C183.824 238.504 184.929 245.963 190.45 255.527L125.851 255.524C116.574 239.458 112.598 225.114 113.923 212.491C114.615 206.836 116.261 201.756 118.859 197.253C122.061 191.704 126.709 187.03 132.805 183.229C143.958 176.153 158.81 172.615 177.362 172.616C196.797 172.617 216.067 176.156 235.171 183.233C254.164 190.119 271.502 199.874 287.183 212.497C302.864 225.121 315.343 239.466 324.62 255.532C333.233 270.45 337.044 283.551 336.05 294.835C335.46 303.459 333.16 311.245 329.151 318.194C327.915 320.337 326.515 322.4 324.953 324.384C318.549 332.799 308.611 343.127 295.139 355.367L377.297 355.37L406.121 405.289L217.29 405.282L188.467 355.363Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M9.32197 225.972L-13.5365 225.971L-42.5255 175.765L43.2765 175.768L175.798 405.282L112.854 405.279L9.32197 225.972Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M345.247 111.915C329.566 99.2919 312.229 89.5371 293.235 82.6512L235.167 183.228C254.161 190.114 271.498 199.869 287.179 212.492L345.247 111.915Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M382.686 154.964C373.41 138.898 360.931 124.553 345.25 111.93L287.182 212.506C302.863 225.13 315.342 239.475 324.618 255.541L382.686 154.964Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M293.243 82.6472C274.139 75.57 254.869 72.031 235.434 72.0303L177.366 172.607C196.801 172.608 216.071 176.147 235.175 183.224L293.243 82.6472Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M394.118 194.257C395.112 182.973 391.301 169.872 382.688 154.953L324.619 255.53C333.233 270.448 337.044 283.55 336.05 294.834L394.118 194.257Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M235.432 72.0311C216.88 72.0304 202.027 75.5681 190.875 82.6442L132.806 183.221C143.959 176.145 158.812 172.607 177.363 172.608L235.432 72.0311Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M265.59 124.25C276.191 124.251 286.24 127.12 295.737 132.858L237.669 233.435C228.172 227.697 218.123 224.828 207.522 224.827L265.59 124.25Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M295.719 132.859C305.326 138.406 312.78 145.77 318.081 154.95L260.013 255.527C254.712 246.347 247.258 238.983 237.651 233.436L295.719 132.859Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M387.218 217.608C391.227 210.66 393.527 202.874 394.117 194.25L336.049 294.827C335.459 303.451 333.159 311.237 329.15 318.185L387.218 217.608Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M245.211 132.577C248.413 127.03 255.204 124.257 265.584 124.258L207.516 224.835C197.136 224.834 190.345 227.607 187.143 233.154L245.211 132.577Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M318.094 154.945C322.842 163.17 324.002 171.107 321.573 178.757L263.505 279.334C265.934 271.684 264.774 263.746 260.026 255.522L318.094 154.945Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M176.925 96.6737C180.127 91.1249 184.776 86.4503 190.871 82.6499L132.803 183.227C126.708 187.027 122.059 191.702 118.857 197.25L176.925 96.6737Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M387.226 217.606C385.989 219.749 384.59 221.813 383.028 223.797L324.96 324.373C326.522 322.39 327.921 320.326 329.157 318.183L387.226 217.606Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M317.269 188.408C319.087 185.262 320.519 182.045 321.562 178.758L263.494 279.335C262.451 282.622 261.019 285.839 259.201 288.985L317.269 188.408Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M245.208 132.573C241.895 137.928 243 145.387 248.522 154.95L190.454 255.527C184.932 245.964 183.827 238.505 187.14 233.15L245.208 132.573Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M176.93 96.6719C174.331 101.175 172.686 106.255 171.993 111.91L113.925 212.487C114.618 206.831 116.263 201.752 118.862 197.249L176.93 96.6719Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M317.266 188.413C314.853 192.589 311.757 196.64 307.978 200.566L249.91 301.143C253.689 297.216 256.785 293.166 259.198 288.99L317.266 188.413Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M464.198 304.708L435.375 254.789L377.307 355.366L406.13 405.285L464.198 304.708Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M353.209 254.787C366.68 242.548 376.618 232.22 383.023 223.805L324.955 324.382C318.55 332.797 308.612 343.124 295.141 355.364L353.209 254.787Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M435.37 254.787L353.212 254.784L295.144 355.361L377.302 355.364L435.37 254.787Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M183.921 154.947L248.521 154.95L190.453 255.527L125.853 255.524L183.921 154.947Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M171.992 111.914C170.668 124.537 174.643 138.881 183.92 154.947L125.852 255.524C116.575 239.458 112.599 225.114 113.924 212.491L171.992 111.914Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M307.987 200.562C301.251 207.256 291.203 216.244 277.842 227.528L219.774 328.105C233.135 316.821 243.183 307.832 249.919 301.139L307.987 200.562Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M15.5469 75.1797L44.5359 125.386L-13.5321 225.963L-42.5212 175.756L15.5469 75.1797Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M277.836 227.536C264.033 238.82 253.708 247.904 246.862 254.789L188.794 355.366C195.64 348.481 205.965 339.397 219.768 328.113L277.836 227.536Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M275.358 304.706L464.189 304.713L406.12 405.29L217.29 405.283L275.358 304.706Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M44.5279 125.39L67.3864 125.39L9.31834 225.967L-13.5401 225.966L44.5279 125.39Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path
-                        d="M101.341 75.1911L233.863 304.705L175.795 405.282L43.2733 175.768L101.341 75.1911ZM15.5431 75.19L-42.525 175.767L43.277 175.77L101.345 75.1932L15.5431 75.19Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M246.866 254.784L246.534 254.784L188.466 355.361L188.798 355.361L246.866 254.784Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M246.539 254.781L275.362 304.701L217.294 405.277L188.471 355.358L246.539 254.781Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M67.3906 125.391L170.923 304.698L112.855 405.275L9.32257 225.967L67.3906 125.391Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                    <path d="M170.921 304.699L233.865 304.701L175.797 405.278L112.853 405.276L170.921 304.699Z"
-                          stroke="#FF750F" stroke-width="1" stroke-linejoin="bevel"/>
-                </g>
-                <g class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4"
-                   style="mix-blend-mode:hard-light">
-                    <path
-                        d="M246.544 254.79L246.875 254.79C253.722 247.905 264.046 238.82 277.849 227.537C291.21 216.253 301.259 207.264 307.995 200.57C314.62 193.685 319.147 186.418 321.577 178.768C324.006 171.117 322.846 163.18 318.097 154.956C312.796 145.775 305.342 138.412 295.735 132.865C286.238 127.127 276.189 124.258 265.588 124.257C255.208 124.257 248.416 127.03 245.214 132.576C241.902 137.931 243.006 145.39 248.528 154.953L183.928 154.951C174.652 138.885 170.676 124.541 172 111.918C173.546 99.2946 179.84 89.5408 190.882 82.6559C202.035 75.5798 216.887 72.0421 235.439 72.0428C254.874 72.0435 274.144 75.5825 293.248 82.6598C312.242 89.5457 329.579 99.3005 345.261 111.924C360.942 124.548 373.421 138.892 382.697 154.958C391.311 169.877 395.121 182.978 394.128 194.262C393.355 205.546 389.656 215.396 383.031 223.811C376.627 232.226 366.688 242.554 353.217 254.794L435.375 254.797L464.198 304.716L275.367 304.709L246.544 254.79Z"
-                        fill="#4B0600"/>
-                    <path
-                        d="M246.544 254.79L246.875 254.79C253.722 247.905 264.046 238.82 277.849 227.537C291.21 216.253 301.259 207.264 307.995 200.57C314.62 193.685 319.147 186.418 321.577 178.768C324.006 171.117 322.846 163.18 318.097 154.956C312.796 145.775 305.342 138.412 295.735 132.865C286.238 127.127 276.189 124.258 265.588 124.257C255.208 124.257 248.416 127.03 245.214 132.576C241.902 137.931 243.006 145.39 248.528 154.953L183.928 154.951C174.652 138.885 170.676 124.541 172 111.918C173.546 99.2946 179.84 89.5408 190.882 82.6559C202.035 75.5798 216.887 72.0421 235.439 72.0428C254.874 72.0435 274.144 75.5825 293.248 82.6598C312.242 89.5457 329.579 99.3005 345.261 111.924C360.942 124.548 373.421 138.892 382.697 154.958C391.311 169.877 395.121 182.978 394.128 194.262C393.355 205.546 389.656 215.396 383.031 223.811C376.627 232.226 366.688 242.554 353.217 254.794L435.375 254.797L464.198 304.716L275.367 304.709L246.544 254.79Z"
-                        stroke="#FF750F" stroke-width="1" stroke-linejoin="round"/>
-                </g>
-                <g class="transition-all delay-300 translate-y-0 opacity-100 duration-750 starting:opacity-0 starting:translate-y-4"
-                   style="mix-blend-mode:hard-light">
-                    <path
-                        d="M67.41 125.402L44.5515 125.401L15.5625 75.1953L101.364 75.1985L233.886 304.712L170.942 304.71L67.41 125.402Z"
-                        fill="#4B0600"/>
-                    <path
-                        d="M67.41 125.402L44.5515 125.401L15.5625 75.1953L101.364 75.1985L233.886 304.712L170.942 304.71L67.41 125.402Z"
-                        stroke="#FF750F" stroke-width="1"/>
-                </g>
-            </svg>
-            <div
-                class="absolute inset-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]"></div>
+          <div class="queue-progress">
+            <div class="queue-progress-row">
+              <span>Antrian menunggu</span>
+              <b id="home-queue-waiting">9 pasien</b>
+            </div>
+            <div class="progress-track"><div class="progress-fill" id="home-queue-fill"></div></div>
+          </div>
         </div>
-    </main>
-</div>
 
-@if (Route::has('login'))
-    <div class="h-14.5 hidden lg:block"></div>
-@endif
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-eyebrow">Cara Kerja</div>
+        <h2>Tiga langkah, tanpa antre di loket</h2>
+        <p>Alur sederhana dari mengambil nomor sampai dipanggil ke ruang periksa.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3>Ambil Antrian</h3>
+          <p>Pasien mengisi data dan memilih poliklinik tujuan langsung dari perangkat masing-masing.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3>Dapat Nomor</h3>
+          <p>Sistem membuat nomor antrian otomatis berdasarkan kode poli, lengkap dengan estimasi waktu tunggu.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3>Monitoring</h3>
+          <p>Pasien bisa melihat status antrian dan posisi terkini secara real-time dari halaman monitoring.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-eyebrow">Status Poliklinik</div>
+        <h2>Pantau antrian tiap poli saat ini</h2>
+        <p>Lihat jumlah antrian yang sedang menunggu di setiap poliklinik sebelum kamu datang.</p>
+      </div>
+      <div class="poli-grid">
+
+        <div class="poli-card">
+          <div class="poli-card-top">
+            <span class="poli-icon" style="background:var(--blue-50);">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 21c-4.4-2.7-8-6.2-8-10.5A5.5 5.5 0 0 1 9.5 5c1 0 2 .4 2.5 1.2C12.5 5.4 13.5 5 14.5 5A5.5 5.5 0 0 1 20 10.5c0 4.3-3.6 7.8-8 10.5Z" stroke="#2f4de0" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <h4>Poli Umum</h4>
+          <div class="waiting"><b id="poli-UMU-waiting">9</b> pasien menunggu</div>
+          <div class="poli-wait-time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Estimasi ~<span id="poli-UMU-time">12</span> menit
+          </div>
+        </div>
+
+        <div class="poli-card">
+          <div class="poli-card-top">
+            <span class="poli-icon" style="background:#fdf2f8;">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v6M9 6h6M6 13h12l-1.2 6.4a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L6 13Z" stroke="#db2777" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <h4>Poli Gigi</h4>
+          <div class="waiting"><b id="poli-GIG-waiting">14</b> pasien menunggu</div>
+          <div class="poli-wait-time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Estimasi ~<span id="poli-GIG-time">24</span> menit
+          </div>
+        </div>
+
+        <div class="poli-card">
+          <div class="poli-card-top">
+            <span class="poli-icon" style="background:#f0fdf4;">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 12h6M12 9v6M12 21c-4.4-2.7-8-6.2-8-10.5A5.5 5.5 0 0 1 9.5 5c1 0 2 .4 2.5 1.2C12.5 5.4 13.5 5 14.5 5A5.5 5.5 0 0 1 20 10.5c0 4.3-3.6 7.8-8 10.5Z" stroke="#16a34a" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <h4>Poli Anak</h4>
+          <div class="waiting"><b id="poli-ANA-waiting">6</b> pasien menunggu</div>
+          <div class="poli-wait-time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Estimasi ~<span id="poli-ANA-time">9</span> menit
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</section>
+<!-- /view-home -->
+
+<section id="view-ambil" class="view">
+  <div class="section" style="padding-top:56px;">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-eyebrow">Ambil Antrian</div>
+        <h2>Isi data untuk dapat nomor antrian</h2>
+        <p>Nomor antrianmu akan dibuat otomatis sesuai poliklinik yang dipilih.</p>
+      </div>
+
+      <div id="ambil-form-wrap" class="form-shell">
+        <div class="field">
+          <label for="input-nama">Nama Pasien</label>
+          <input type="text" id="input-nama" placeholder="Contoh: Siti Rahma">
+        </div>
+        <div class="field">
+          <label for="input-poli">Pilih Poliklinik</label>
+          <select id="input-poli">
+            <option value="UMU">Poli Umum</option>
+            <option value="GIG">Poli Gigi</option>
+            <option value="ANA">Poli Anak</option>
+          </select>
+          <div class="field-hint">Nomor antrian akan mengikuti kode poliklinik, contoh: UMU-001.</div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="ambilAntrian()">
+          Dapatkan Nomor Antrian
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div id="ambil-result-wrap" class="ticket-result" style="display:none;"></div>
+    </div>
+  </div>
+</section>
+
+<section id="view-monitoring" class="view">
+  <div class="section" style="padding-top:56px;">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-eyebrow">Monitoring</div>
+        <h2>Status antrian saat ini</h2>
+        <p>Pantau nomor yang sedang dilayani dan daftar tunggu di tiap poliklinik.</p>
+      </div>
+      <div class="refresh-row">
+        <button class="btn btn-ghost" onclick="renderMonitoring()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 4v6h6M20 20v-6h-6M4.5 15a8 8 0 0 0 13.9 3M19.5 9A8 8 0 0 0 5.6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Segarkan
+        </button>
+      </div>
+      <div id="monitoring-grid" class="mon-grid"></div>
+    </div>
+  </div>
+</section>
+
+<section id="view-admin" class="view">
+  <div class="section" style="padding-top:56px;">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-eyebrow">Panel Admin</div>
+        <h2>Kelola panggilan antrian</h2>
+        <p>Panggil nomor berikutnya atau reset antrian per poliklinik. Halaman ini untuk petugas loket.</p>
+      </div>
+      <div id="admin-grid" class="admin-grid"></div>
+      <div class="section-head" style="margin-bottom:20px;">
+        <h2 style="font-size:22px;">Riwayat Antrian Hari Ini</h2>
+      </div>
+      <table class="admin-table">
+        <thead>
+          <tr><th>Nomor</th><th>Nama</th><th>Poli</th><th>Status</th></tr>
+        </thead>
+        <tbody id="admin-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container footer-wrap">
+    <div class="footer-brand">
+      <span class="brand-mark" style="width:28px;height:28px;">
+        <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 12h4l2-6 4 12 2-6h4" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      PoliQueue
+    </div>
+    <div class="footer-note">© 2026 PoliQueue — Sistem Informasi Antrian Poliklinik</div>
+  </div>
+</footer>
+
+<script>
+  // ===== Konfigurasi poliklinik =====
+  var POLI_INFO = {
+    UMU: { name: 'Poli Umum', avgMinutes: 4 },
+    GIG: { name: 'Poli Gigi', avgMinutes: 5 },
+    ANA: { name: 'Poli Anak', avgMinutes: 4 }
+  };
+  var STORAGE_KEY = 'poliqueue_state_v1';
+  var MY_TICKET_KEY = 'poliqueue_my_ticket';
+
+  // ===== State: load / save dari localStorage browser =====
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return seedState();
+  }
+  function saveState(state){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+  function seedState(){
+    // data contoh awal supaya tampilan tidak kosong saat pertama dibuka
+    var state = { polis:{} };
+    var seed = { UMU:5, GIG:8, ANA:3 };
+    Object.keys(POLI_INFO).forEach(function(code){
+      var tickets = [];
+      for(var i=1;i<=seed[code];i++){
+        tickets.push({ no: code + '-' + pad(i), name:'Pasien '+i, status: i===1?'called':'waiting', createdAt: Date.now() });
+      }
+      state.polis[code] = { counter: seed[code]+1, tickets: tickets };
+    });
+    saveState(state);
+    return state;
+  }
+  function pad(n){ return String(n).padStart(3,'0'); }
+
+  var state = loadState();
+
+  // ===== Navigasi antar halaman =====
+  function showView(view){
+    document.querySelectorAll('.view').forEach(function(el){ el.classList.remove('active'); });
+    document.getElementById('view-'+view).classList.add('active');
+    document.querySelectorAll('.nav-link').forEach(function(el){
+      el.classList.toggle('active', el.dataset.view === view && view !== 'admin');
+    });
+    window.location.hash = view;
+    window.scrollTo({top:0, behavior:'smooth'});
+
+    if(view === 'home') renderHome();
+    if(view === 'monitoring') renderMonitoring();
+    if(view === 'admin') renderAdmin();
+  }
+
+  // ===== Beranda: kartu contoh nomor + status poli =====
+  function renderHome(){
+    var codes = Object.keys(POLI_INFO);
+    var busiest = codes.reduce(function(a,b){
+      return waitingCount(b) > waitingCount(a) ? b : a;
+    });
+    var w = waitingCount(busiest);
+    document.getElementById('home-queue-poli').textContent = POLI_INFO[busiest].name;
+    document.getElementById('home-queue-number').textContent = nextPreviewNumber(busiest);
+    document.getElementById('home-queue-waiting').textContent = w + ' pasien';
+    document.getElementById('home-queue-fill').style.width = Math.min(100, w*8) + '%';
+
+    codes.forEach(function(code){
+      var wc = waitingCount(code);
+      var elW = document.getElementById('poli-'+code+'-waiting');
+      var elT = document.getElementById('poli-'+code+'-time');
+      if(elW) elW.textContent = wc;
+      if(elT) elT.textContent = wc * POLI_INFO[code].avgMinutes;
+    });
+  }
+  function waitingCount(code){
+    return state.polis[code].tickets.filter(function(t){ return t.status === 'waiting'; }).length;
+  }
+  function nextPreviewNumber(code){
+    var p = state.polis[code];
+    return code + '-' + pad(p.counter);
+  }
+
+  // ===== Ambil Antrian =====
+  function ambilAntrian(){
+    var name = document.getElementById('input-nama').value.trim() || 'Pasien';
+    var code = document.getElementById('input-poli').value;
+    var p = state.polis[code];
+    var no = code + '-' + pad(p.counter);
+    p.counter++;
+    p.tickets.push({ no:no, name:name, status:'waiting', createdAt: Date.now() });
+    saveState(state);
+    localStorage.setItem(MY_TICKET_KEY, no);
+
+    var position = waitingCount(code); // posisi ticket baru = jumlah yg menunggu skrg
+    var estMinutes = position * POLI_INFO[code].avgMinutes;
+
+    document.getElementById('ambil-form-wrap').style.display = 'none';
+    var resultWrap = document.getElementById('ambil-result-wrap');
+    resultWrap.style.display = 'block';
+    resultWrap.innerHTML =
+      '<div class="queue-card" style="max-width:420px;margin:0 auto;">' +
+        '<div class="queue-card-top">' +
+          '<span class="queue-label">Nomor Antrian Kamu</span>' +
+          '<span class="live-pill"><span class="dot"></span> Baru</span>' +
+        '</div>' +
+        '<div class="queue-number">'+no+'</div>' +
+        '<div class="queue-meta">'+POLI_INFO[code].name+
+          '<span class="status-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Menunggu</span>' +
+        '</div>' +
+        '<div class="queue-progress">' +
+          '<div class="queue-progress-row"><span>Posisi antrian</span><b>'+position+'</b></div>' +
+          '<div class="queue-progress-row"><span>Estimasi tunggu</span><b>~'+estMinutes+' menit</b></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="ticket-actions">' +
+        '<button class="btn btn-primary" onclick="showView(\'monitoring\')">Pantau di Monitoring</button>' +
+        '<button class="btn btn-secondary" onclick="resetAmbilForm()">Ambil Nomor Lain</button>' +
+      '</div>';
+  }
+  function resetAmbilForm(){
+    document.getElementById('input-nama').value = '';
+    document.getElementById('ambil-form-wrap').style.display = 'block';
+    document.getElementById('ambil-result-wrap').style.display = 'none';
+  }
+
+  // ===== Monitoring =====
+  function renderMonitoring(){
+    var myTicket = localStorage.getItem(MY_TICKET_KEY);
+    var grid = document.getElementById('monitoring-grid');
+    grid.innerHTML = '';
+    Object.keys(POLI_INFO).forEach(function(code){
+      var p = state.polis[code];
+      var called = p.tickets.filter(function(t){return t.status==='called';}).slice(-1)[0];
+      var waiting = p.tickets.filter(function(t){return t.status==='waiting';});
+
+      var listHtml = waiting.length
+        ? waiting.map(function(t){
+            var mine = t.no === myTicket ? ' mine' : '';
+            return '<li class="'+mine.trim()+'"><span>'+t.no+'</span><span>'+t.name+'</span></li>';
+          }).join('')
+        : '<div class="mon-empty">Tidak ada antrian menunggu.</div>';
+
+      var card = document.createElement('div');
+      card.className = 'mon-card';
+      card.innerHTML =
+        '<h4>'+p_name(code)+'</h4>' +
+        '<div class="mon-serving">' +
+          '<span>Sedang Dilayani</span>' +
+          '<b>'+ (called ? called.no : '—') +'</b>' +
+        '</div>' +
+        '<ul class="mon-list">'+listHtml+'</ul>';
+      grid.appendChild(card);
+    });
+  }
+  function p_name(code){ return POLI_INFO[code].name; }
+
+  // ===== Admin =====
+  function renderAdmin(){
+    var grid = document.getElementById('admin-grid');
+    grid.innerHTML = '';
+    Object.keys(POLI_INFO).forEach(function(code){
+      var p = state.polis[code];
+      var called = p.tickets.filter(function(t){return t.status==='called';}).slice(-1)[0];
+      var waiting = p.tickets.filter(function(t){return t.status==='waiting';});
+
+      var card = document.createElement('div');
+      card.className = 'admin-card';
+      card.innerHTML =
+        '<h4>'+p_name(code)+'</h4>' +
+        '<div class="admin-row"><span>Sedang dilayani</span><b>'+(called?called.no:'—')+'</b></div>' +
+        '<div class="admin-row"><span>Menunggu</span><b>'+waiting.length+' pasien</b></div>' +
+        '<div class="admin-actions">' +
+          '<button class="btn btn-primary" onclick="panggilBerikutnya(\''+code+'\')">Panggil Berikutnya</button>' +
+          '<button class="btn btn-ghost" onclick="resetPoli(\''+code+'\')">Reset</button>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+    renderAdminTable();
+  }
+  function panggilBerikutnya(code){
+    var p = state.polis[code];
+    // selesaikan yang sedang dipanggil
+    p.tickets.forEach(function(t){ if(t.status==='called') t.status='done'; });
+    // panggil antrian berikutnya
+    var next = p.tickets.filter(function(t){return t.status==='waiting';})[0];
+    if(next) next.status = 'called';
+    saveState(state);
+    renderAdmin();
+  }
+  function resetPoli(code){
+    if(!confirm('Reset seluruh antrian '+p_name(code)+'?')) return;
+    state.polis[code] = { counter:1, tickets:[] };
+    saveState(state);
+    renderAdmin();
+  }
+  function renderAdminTable(){
+    var body = document.getElementById('admin-table-body');
+    var rows = [];
+    Object.keys(POLI_INFO).forEach(function(code){
+      state.polis[code].tickets.forEach(function(t){
+        rows.push({ t:t, poli:p_name(code) });
+      });
+    });
+    rows.sort(function(a,b){ return b.t.createdAt - a.t.createdAt; });
+    body.innerHTML = rows.length ? rows.map(function(r){
+      return '<tr><td>'+r.t.no+'</td><td>'+r.t.name+'</td><td>'+r.poli+'</td>' +
+        '<td><span class="status-pill '+r.t.status+'">'+labelStatus(r.t.status)+'</span></td></tr>';
+    }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--navy-500);">Belum ada data antrian.</td></tr>';
+  }
+  function labelStatus(s){
+    return s==='waiting' ? 'Menunggu' : s==='called' ? 'Dipanggil' : 'Selesai';
+  }
+
+  // ===== Inisialisasi halaman =====
+  renderHome();
+  var startView = (window.location.hash || '#home').replace('#','');
+  if(!document.getElementById('view-'+startView)) startView = 'home';
+  showView(startView);
+</script>
 </body>
 </html>
