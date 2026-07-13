@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QueueTicket extends Model
 {
+    public const STATUS_WAITING = 'waiting';
+    public const STATUS_CALLED = 'called';
+    public const STATUS_DONE = 'done';
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'patient_id',
         'polyclinic_id',
@@ -39,5 +44,27 @@ class QueueTicket extends Model
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class);
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_WAITING => 'Menunggu',
+            self::STATUS_CALLED => 'Dipanggil',
+            self::STATUS_DONE => 'Selesai',
+            self::STATUS_CANCELLED => 'Batal',
+            default => $this->status,
+        };
+    }
+
+    public function getStatusClassAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_WAITING => 'status-waiting',
+            self::STATUS_CALLED => 'status-called',
+            self::STATUS_DONE => 'status-done',
+            self::STATUS_CANCELLED => 'status-cancelled',
+            default => 'status-waiting',
+        };
     }
 }

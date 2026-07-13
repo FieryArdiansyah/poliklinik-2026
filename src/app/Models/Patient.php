@@ -23,4 +23,13 @@ class Patient extends Model
     {
         return $this->hasMany(QueueTicket::class);
     }
+
+    public function getGenderLabelAttribute(): string
+    {
+        return match ($this->gender) {
+            'male' => 'Laki-laki',
+            'female' => 'Perempuan',
+            default => '-',
+        };
+    }
 }

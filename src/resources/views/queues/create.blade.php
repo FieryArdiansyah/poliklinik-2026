@@ -1,328 +1,136 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Ambil Antrian</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.frontend', ['title' => 'Ambil Antrian - PoliQueue'])
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #0f172a;
-        }
-
-        .navbar {
-            background: #ffffff;
-            padding: 18px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 12px rgba(0,0,0,.08);
-        }
-
-        .brand {
-            font-size: 22px;
-            font-weight: bold;
-            color: #2563eb;
-            text-decoration: none;
-        }
-
-        .nav a {
-            margin-left: 20px;
-            color: #334155;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .nav a:hover {
-            color: #2563eb;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 50px auto;
-            padding: 0 20px;
-        }
-
-        .header {
-            margin-bottom: 28px;
-        }
-
-        .header h1 {
-            font-size: 36px;
-            margin: 0 0 8px;
-        }
-
-        .header p {
-            color: #64748b;
-            font-size: 16px;
-        }
-
-        .layout {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 24px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 18px;
-            padding: 28px;
-            box-shadow: 0 10px 30px rgba(0,0,0,.08);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 18px;
-        }
-
-        .form-group.full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 13px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 15px;
-            outline: none;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37,99,235,.12);
-        }
-
-        textarea {
-            resize: vertical;
-        }
-
-        .btn {
-            border: none;
-            padding: 14px 22px;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-
-        .submit-btn {
-            width: 100%;
-            margin-top: 22px;
-            font-size: 16px;
-        }
-
-        .info-box h3 {
-            margin-top: 0;
-        }
-
-        .step {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 16px;
-            border-radius: 14px;
-            margin-bottom: 14px;
-        }
-
-        .step strong {
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        .step span {
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .alert {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 14px;
-            border-radius: 12px;
-            margin-bottom: 18px;
-        }
-
-        @media (max-width: 900px) {
-            .layout {
-                grid-template-columns: 1fr;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .navbar {
-                flex-direction: column;
-                gap: 14px;
-            }
-
-            .nav a {
-                margin-left: 10px;
-                margin-right: 10px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="navbar">
-        <a href="{{ route('home') }}" class="brand">PoliQueue</a>
-
-        <div class="nav">
-            <a href="{{ route('home') }}">Beranda</a>
-            <a href="{{ route('queues.create') }}">Ambil Antrian</a>
-            <a href="{{ route('queues.index') }}">Monitoring</a>
-            <a href="/admin">Admin</a>
-        </div>
-    </div>
-
+@section('content')
+<section class="page">
     <div class="container">
-        <div class="header">
-            <h1>Ambil Nomor Antrian</h1>
-            <p>Isi data pasien dan pilih poliklinik tujuan untuk mendapatkan nomor antrian.</p>
+        <div style="margin-bottom: 28px;">
+            <h1 class="section-title">Ambil Nomor Antrian</h1>
+            <p class="section-desc">
+                Isi data pasien dengan benar, pilih poliklinik dan dokter tujuan,
+                lalu sistem akan membuat nomor antrian otomatis.
+            </p>
         </div>
 
-        <div class="layout">
-            <div class="card">
-                @if ($errors->any())
-                    <div class="alert">
-                        <strong>Data belum lengkap:</strong>
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+        @if ($errors->any())
+            <div class="alert alert-error">
+                Data belum valid. Silakan cek kembali form di bawah.
+            </div>
+        @endif
 
-                <form action="{{ route('queues.store') }}" method="POST">
-                    @csrf
+        <form method="POST" action="{{ route('queues.store') }}" class="card" style="padding: 30px;">
+            @csrf
 
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nama Pasien</label>
-                            <input type="text" name="patient_name" value="{{ old('patient_name') }}" placeholder="Masukkan nama pasien" required>
-                        </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="patient_name">Nama Pasien</label>
+                    <input type="text" id="patient_name" name="patient_name" value="{{ old('patient_name') }}" placeholder="Masukkan nama lengkap">
+                    @error('patient_name') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
 
-                        <div class="form-group">
-                            <label>Nomor HP</label>
-                            <input type="text" name="phone" value="{{ old('phone') }}" placeholder="Contoh: 08123456789">
-                        </div>
+                <div class="form-group">
+                    <label for="phone">No. HP</label>
+                    <input type="text" id="phone" name="phone" value="{{ old('phone') }}" placeholder="Contoh: 081234567890">
+                    @error('phone') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
 
-                        <div class="form-group">
-                            <label>Jenis Kelamin</label>
-                            <select name="gender">
-                                <option value="">Pilih jenis kelamin</option>
-                                <option value="male" @selected(old('gender') === 'male')>Laki-laki</option>
-                                <option value="female" @selected(old('gender') === 'female')>Perempuan</option>
-                            </select>
-                        </div>
+                <div class="form-group">
+                    <label for="gender">Jenis Kelamin</label>
+                    <select id="gender" name="gender">
+                        <option value="">Pilih jenis kelamin</option>
+                        <option value="male" @selected(old('gender') === 'male')>Laki-laki</option>
+                        <option value="female" @selected(old('gender') === 'female')>Perempuan</option>
+                    </select>
+                    @error('gender') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
 
-                        <div class="form-group">
-                            <label>Poliklinik</label>
-                            <select name="polyclinic_id" required>
-                                <option value="">Pilih poliklinik</option>
-                                @foreach ($polyclinics as $polyclinic)
-                                    <option value="{{ $polyclinic->id }}" @selected(old('polyclinic_id') == $polyclinic->id)>
-                                        {{ $polyclinic->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                <div class="form-group">
+                    <label for="date_of_birth">Tanggal Lahir</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth') }}">
+                    @error('date_of_birth') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
 
-                        <div class="form-group full">
-                            <label>Dokter</label>
-                            <select name="doctor_id" required>
-                                <option value="">Pilih dokter</option>
-                                @foreach ($doctors as $doctor)
-                                    <option value="{{ $doctor->id }}" @selected(old('doctor_id') == $doctor->id)>
-                                        {{ $doctor->name }} - {{ $doctor->polyclinic->name ?? '-' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                <div class="form-group full">
+                    <label for="address">Alamat</label>
+                    <textarea id="address" name="address" placeholder="Masukkan alamat pasien">{{ old('address') }}</textarea>
+                    @error('address') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
 
-                        <div class="form-group full">
-                            <label>Alamat</label>
-                            <textarea name="address" rows="3" placeholder="Masukkan alamat pasien">{{ old('address') }}</textarea>
-                        </div>
+                <div class="form-group">
+                    <label for="polyclinic_id">Poliklinik Tujuan</label>
+                    <select id="polyclinic_id" name="polyclinic_id">
+                        <option value="">Pilih poliklinik</option>
+                        @foreach ($polyclinics as $polyclinic)
+                            <option value="{{ $polyclinic->id }}" @selected((string) old('polyclinic_id') === (string) $polyclinic->id)>
+                                {{ $polyclinic->name }} ({{ $polyclinic->code }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('polyclinic_id') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
 
-                        <div class="form-group full">
-                            <label>Keluhan</label>
-                            <textarea name="complaint" rows="4" placeholder="Contoh: Demam, batuk, pusing">{{ old('complaint') }}</textarea>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="doctor_id">Dokter</label>
+                    <select id="doctor_id" name="doctor_id">
+                        <option value="">Pilih dokter</option>
+                        @foreach ($doctors as $doctor)
+                            <option
+                                value="{{ $doctor->id }}"
+                                data-polyclinic="{{ $doctor->polyclinic_id }}"
+                                @selected((string) old('doctor_id') === (string) $doctor->id)
+                            >
+                                {{ $doctor->name }} - {{ $doctor->polyclinic?->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('doctor_id') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
 
-                    <button type="submit" class="btn btn-primary submit-btn">
-                        Ambil Nomor Antrian
-                    </button>
-                </form>
+                <div class="form-group full">
+                    <label for="complaint">Keluhan</label>
+                    <textarea id="complaint" name="complaint" placeholder="Contoh: demam, pusing, sakit gigi, kontrol rutin">{{ old('complaint') }}</textarea>
+                    @error('complaint') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
             </div>
 
-            <div class="card info-box">
-                <h3>Alur Antrian</h3>
-
-                <div class="step">
-                    <strong>1. Isi Data Pasien</strong>
-                    <span>Masukkan data pasien dengan benar.</span>
-                </div>
-
-                <div class="step">
-                    <strong>2. Pilih Poli dan Dokter</strong>
-                    <span>Pilih layanan poliklinik sesuai kebutuhan pasien.</span>
-                </div>
-
-                <div class="step">
-                    <strong>3. Dapat Nomor</strong>
-                    <span>Sistem akan membuat nomor antrian otomatis.</span>
-                </div>
-
-                <div class="step">
-                    <strong>4. Pantau Monitoring</strong>
-                    <span>Lihat status antrian melalui halaman monitoring.</span>
-                </div>
-
-                <a href="{{ route('queues.index') }}" class="btn btn-secondary" style="width: 100%;">
-                    Lihat Monitoring
-                </a>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-primary">Buat Nomor Antrian</button>
+                <a href="{{ route('home') }}" class="btn btn-secondary">Kembali</a>
             </div>
-        </div>
+        </form>
     </div>
+</section>
+@endsection
 
-</body>
-</html>
+@push('scripts')
+<script>
+    const polyclinicSelect = document.getElementById('polyclinic_id');
+    const doctorSelect = document.getElementById('doctor_id');
+    const doctorOptions = Array.from(doctorSelect.options);
+
+    function filterDoctors() {
+        const selectedPolyclinic = polyclinicSelect.value;
+
+        doctorOptions.forEach(option => {
+            if (!option.value) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const isMatch = option.dataset.polyclinic === selectedPolyclinic;
+
+            option.hidden = !isMatch;
+            option.disabled = !isMatch;
+        });
+
+        const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
+
+        if (selectedOption && selectedOption.disabled) {
+            doctorSelect.value = '';
+        }
+    }
+
+    polyclinicSelect.addEventListener('change', filterDoctors);
+    filterDoctors();
+</script>
+@endpush

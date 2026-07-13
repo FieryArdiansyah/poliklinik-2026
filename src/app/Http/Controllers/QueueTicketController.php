@@ -8,36 +8,66 @@ use App\Models\Polyclinic;
 use App\Models\QueueTicket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class QueueTicketController extends Controller
 {
+    private const ESTIMATED_MINUTES_PER_PATIENT = 5;
+
     public function index()
     {
-        $queueTickets = QueueTicket::with(['patient', 'doctor', 'polyclinic'])
-            ->whereDate('queue_date', today())
+        $today = today();
+
+        $queueTickets = QueueTicket::query()
+            ->with(['patient', 'doctor', 'polyclinic'])
+            ->whereDate('queue_date', $today)
+            ->orderBy('polyclinic_id')
             ->orderBy('created_at')
             ->get();
 
-        // Ambil semua antrian yang sedang dipanggil
-        // Jadi kalau ada Poli Umum, Poli Gigi, Poli Anak yang dipanggil bersamaan,
-        // semuanya akan tampil di halaman monitoring.
-        $calledQueues = QueueTicket::with(['patient', 'doctor', 'polyclinic'])
-            ->whereDate('queue_date', today())
-            ->where('status', 'called')
+        $calledQueues = QueueTicket::query()
+            ->with(['patient', 'doctor', 'polyclinic'])
+            ->whereDate('queue_date', $today)
+            ->where('status', QueueTicket::STATUS_CALLED)
             ->orderBy('called_at')
             ->get();
 
-        return view('queues.index', compact('queueTickets', 'calledQueues'));
+        $polyclinics = Polyclinic::query()
+            ->where('is_active', true)
+            ->withCount([
+                'queueTickets as waiting_count' => fn ($query) => $query
+                    ->whereDate('queue_date', $today)
+                    ->where('status', QueueTicket::STATUS_WAITING),
+
+                'queueTickets as called_count' => fn ($query) => $query
+                    ->whereDate('queue_date', $today)
+                    ->where('status', QueueTicket::STATUS_CALLED),
+
+                'queueTickets as done_count' => fn ($query) => $query
+                    ->whereDate('queue_date', $today)
+                    ->where('status', QueueTicket::STATUS_DONE),
+            ])
+            ->orderBy('name')
+            ->get();
+
+        return view('queues.index', compact(
+            'queueTickets',
+            'calledQueues',
+            'polyclinics'
+        ));
     }
 
     public function create()
     {
-        $polyclinics = Polyclinic::where('is_active', true)
+        $polyclinics = Polyclinic::query()
+            ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        $doctors = Doctor::with('polyclinic')
+        $doctors = Doctor::query()
+            ->with('polyclinic')
             ->where('is_active', true)
+            ->whereHas('polyclinic', fn ($query) => $query->where('is_active', true))
             ->orderBy('name')
             ->get();
 
@@ -50,10 +80,26 @@ class QueueTicketController extends Controller
             'patient_name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string'],
-            'gender' => ['nullable', 'in:male,female'],
-            'polyclinic_id' => ['required', 'exists:polyclinics,id'],
-            'doctor_id' => ['required', 'exists:doctors,id'],
-            'complaint' => ['nullable', 'string'],
+            'date_of_birth' => ['nullable', 'date'],
+            'gender' => ['nullable', Rule::in(['male', 'female'])],
+            'polyclinic_id' => [
+                'required',
+                Rule::exists('polyclinics', 'id')->where(fn ($query) => $query->where('is_active', true)),
+            ],
+            'doctor_id' => [
+                'required',
+                Rule::exists('doctors', 'id')->where(function ($query) use ($request) {
+                    return $query
+                        ->where('is_active', true)
+                        ->where('polyclinic_id', $request->integer('polyclinic_id'));
+                }),
+            ],
+            'complaint' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'patient_name.required' => 'Nama pasien wajib diisi.',
+            'polyclinic_id.required' => 'Poliklinik wajib dipilih.',
+            'doctor_id.required' => 'Dokter wajib dipilih.',
+            'doctor_id.exists' => 'Dokter tidak sesuai dengan poliklinik yang dipilih.',
         ]);
 
         $queueTicket = DB::transaction(function () use ($validated) {
@@ -61,34 +107,43 @@ class QueueTicketController extends Controller
                 'name' => $validated['patient_name'],
                 'phone' => $validated['phone'] ?? null,
                 'address' => $validated['address'] ?? null,
+                'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
             ]);
 
-            $polyclinic = Polyclinic::findOrFail($validated['polyclinic_id']);
+            $polyclinic = Polyclinic::query()
+                ->where('is_active', true)
+                ->lockForUpdate()
+                ->findOrFail($validated['polyclinic_id']);
 
-            $totalQueueToday = QueueTicket::where('polyclinic_id', $polyclinic->id)
+            $totalQueueToday = QueueTicket::query()
+                ->where('polyclinic_id', $polyclinic->id)
                 ->whereDate('queue_date', today())
+                ->lockForUpdate()
                 ->count();
 
             $queueNumber = $totalQueueToday + 1;
 
-            $queueCode = strtoupper($polyclinic->code) . '-' . str_pad($queueNumber, 3, '0', STR_PAD_LEFT);
+            $queueCode = strtoupper($polyclinic->code) . '-' . str_pad((string) $queueNumber, 3, '0', STR_PAD_LEFT);
 
-            $waitingBefore = QueueTicket::where('polyclinic_id', $polyclinic->id)
+            $waitingBefore = QueueTicket::query()
+                ->where('polyclinic_id', $polyclinic->id)
                 ->whereDate('queue_date', today())
-                ->whereIn('status', ['waiting', 'called'])
+                ->whereIn('status', [
+                    QueueTicket::STATUS_WAITING,
+                    QueueTicket::STATUS_CALLED,
+                ])
+                ->lockForUpdate()
                 ->count();
-
-            $estimatedWaitingMinutes = $waitingBefore * 5;
 
             return QueueTicket::create([
                 'patient_id' => $patient->id,
-                'polyclinic_id' => $validated['polyclinic_id'],
+                'polyclinic_id' => $polyclinic->id,
                 'doctor_id' => $validated['doctor_id'],
                 'queue_code' => $queueCode,
                 'queue_date' => today(),
-                'status' => 'waiting',
-                'estimated_waiting_minutes' => $estimatedWaitingMinutes,
+                'status' => QueueTicket::STATUS_WAITING,
+                'estimated_waiting_minutes' => $waitingBefore * self::ESTIMATED_MINUTES_PER_PATIENT,
                 'complaint' => $validated['complaint'] ?? null,
             ]);
         });

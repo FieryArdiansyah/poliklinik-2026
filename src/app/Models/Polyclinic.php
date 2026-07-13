@@ -23,7 +23,7 @@ class Polyclinic extends Model
         return $this->hasMany(Doctor::class);
     }
 
-    public function doctorSchedules(): HasMany
+    public function schedules(): HasMany
     {
         return $this->hasMany(DoctorSchedule::class);
     }
@@ -31,5 +31,10 @@ class Polyclinic extends Model
     public function queueTickets(): HasMany
     {
         return $this->hasMany(QueueTicket::class);
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return "{$this->name} ({$this->code})";
     }
 }

@@ -18,9 +18,9 @@ class DoctorSchedule extends Model
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'start_time' => 'datetime:H:i',
         'end_time' => 'datetime:H:i',
-        'is_active' => 'boolean',
     ];
 
     public function doctor(): BelongsTo
@@ -31,5 +31,19 @@ class DoctorSchedule extends Model
     public function polyclinic(): BelongsTo
     {
         return $this->belongsTo(Polyclinic::class);
+    }
+
+    public function getDayLabelAttribute(): string
+    {
+        return match ($this->day) {
+            'monday' => 'Senin',
+            'tuesday' => 'Selasa',
+            'wednesday' => 'Rabu',
+            'thursday' => 'Kamis',
+            'friday' => 'Jumat',
+            'saturday' => 'Sabtu',
+            'sunday' => 'Minggu',
+            default => $this->day,
+        };
     }
 }
